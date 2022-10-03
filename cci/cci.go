@@ -39,56 +39,56 @@ func (client Client) CreatePipeline(branch string) (int, error) {
   return result.Number, nil
 }
 
-type getPipelinesResult struct {
-  Items []struct {
-    Id string `json:"id"`
-  } `json:"items"`
+type Pipeline struct {
+  Id string `json:"id"`
+  CreatedAt string `json:"created_at"`
+  UpdatedAt string `json:"updated_at"`
+  Number int `json:"number"`
+  State string `json:"state"`
 }
+type getPipelinesResult struct { Items []Pipeline `json:"items"` }
 
-type getWorkflowsResult struct {
-  Items []struct {
-    Id string `json:"id"`
-    Name string `json:"name"`
-    Status string `json:"status"`
-  } `json:"items"`
-}
-
-// Cancels all workflows that match `workflowName` for the latest pipeline of the `ref` reference (git).
-// Returns the number of workflows cancelled and possible error. On error, int return value is -1.
-// NOTE(jpp): Will currently error if no pipelines are found, or if pipeline has no workflows. This isn't technically a "failure", but I opted to keep it that way for now to identify possible bugs. When more stable, we can remove.
-func (client Client) CancelLastPipelineWorkflows(ref string, workflowName string) (int, error) {
-  // Get the pipelines of the branch.
-  var pipelinesResult getPipelinesResult
+// Fetches the pipelines of a given VCS branch.
+func (client Client) GetBranchPipelines(branch string) ([]Pipeline, error) {
+  var result getPipelinesResult
   resp, err := client.req.R().
-    SetResult(&pipelinesResult).
-    SetQueryParam("branch", ref).
+    SetResult(&result).
+    SetQueryParam("branch", branch).
     Get(client.projectUrl("pipeline"))
-  if err != nil { return -1, errors.New("Failed to get pipeline.") }
-  if !resp.IsSuccess() { return -1, errors.New(fmt.Sprintf("Failed to get pipeline with response: %s", readResponse(resp.Body))) }
-  if len(pipelinesResult.Items) <= 0 { return 0, errors.New("No pipelines found.") }
+  if err != nil { return []Pipeline{}, errors.New("Failed to get pipelines.") }
+  if !resp.IsSuccess() { return []Pipeline{}, errors.New(fmt.Sprintf("Failed to get pipeline with response: %s", readResponse(resp.Body))) }
+  if len(result.Items) <= 0 { return result.Items, errors.New("No pipelines found.") }
 
-  // Get workflows of the first found pipeline (should be the latest)
-  item := pipelinesResult.Items[0]
-  var workflowsResult getWorkflowsResult
-  resp, err = client.req.R().
-    SetResult(&workflowsResult).
-    Get(client.url(fmt.Sprintf("pipeline/%s/workflow", item.Id)))
-  if err != nil { return -1, errors.New("Failed to get workflows.") }
-  if !resp.IsSuccess() { return -1, errors.New(fmt.Sprintf("Failed to get workflows with response: %s", readResponse(resp.Body))) }
-  if len(workflowsResult.Items) <= 0 { return -1, errors.New("Pipeline has no workflows.") }
+  return result.Items, nil
+}
 
-  // Cancel all found workflows that are running and match the given name.
-  cancellations := 0
-  for _, workflow := range workflowsResult.Items {
-    if workflow.Name == workflowName && workflow.Status == "running" {
-      resp, err = client.req.R().Post(client.url(fmt.Sprintf("workflow/%s/cancel", workflow.Id)))
-      if err != nil { return -1, errors.New("Failed to cancel workflow.") }
-      if !resp.IsSuccess() { return -1, errors.New(fmt.Sprintf("Failed to cancel workflow with response: %s", readResponse(resp.Body))) }
-      cancellations++
-    }
-  }
+type Workflow struct {
+  Id string `json:"id"`
+  Name string `json:"name"`
+  Status string `json:"status"` // Can be one of: success, canceled, running, failed
+}
+type getWorkflowsResult struct { Items []Workflow `json:"items"` }
 
-  return cancellations, nil
+// Fetches the workflows of a given pipeline.
+func (client Client) GetPipelineWorkflows(pipelineId string) ([]Workflow, error) {
+  var result getWorkflowsResult
+  resp, err := client.req.R().
+    SetResult(&result).
+    Get(client.url(fmt.Sprintf("pipeline/%s/workflow", pipelineId)))
+  if err != nil { return []Workflow{}, errors.New("Failed to get workflows.") }
+  if !resp.IsSuccess() { return []Workflow{}, errors.New(fmt.Sprintf("Failed to get workflows with response: %s", readResponse(resp.Body))) }
+  if len(result.Items) <= 0 { return result.Items, errors.New("Pipeline has no workflows.") }
+
+  return result.Items, nil
+}
+
+// Cancels a workflow.
+func (client Client) CancelWorkflow(workflowId string) (error) {
+  resp, err := client.req.R().Post(client.url(fmt.Sprintf("workflow/%s/cancel", workflowId)))
+  if err != nil { return errors.New("Failed to cancel workflow.") }
+  if !resp.IsSuccess() { return errors.New(fmt.Sprintf("Failed to cancel workflow with response: %s", readResponse(resp.Body))) }
+
+  return nil
 }
 
 func (client Client) url(uri string) string {
@@ -103,6 +103,6 @@ func (client Client) projectUrl(uri string) string {
 func readResponse(rc io.ReadCloser) string {
   bytes, err := io.ReadAll(rc)
   if err != nil { return "" }
-	
+
   return string(bytes)
 }
