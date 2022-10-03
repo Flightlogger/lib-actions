@@ -50,7 +50,7 @@ func (client Client) GetCurrentPullRequests() ([]*github.PullRequest, error) {
   } else if eventName == "push" {
     // Ref is a branch. Get PR by searching for branch, supplied by ref.
     opts := github.PullRequestListOptions {
-      Head: fmt.Sprintf("%s: %s", client.Repo, client.GithubRef),
+      Head: fmt.Sprintf("%s:%s", client.Repo, client.GithubRef),
     }
     prs, _, err := client.ghClient.PullRequests.List(client.ctx, client.Org, client.Repo, &opts)
     if err != nil { return nil, errors.New("Failed to list pull-requests from GitHub API.") }
