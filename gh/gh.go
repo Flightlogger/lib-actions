@@ -60,18 +60,3 @@ func (client Client) GetCurrentPullRequests() ([]*github.PullRequest, error) {
     return nil, errors.New("Unsupported action event type.")
   }
 }
-
-// func startPipeline() {
-//   fmt.Printf("Attempting to start pipeline for ref: %s\n", headRef)
-//   num, err := cciClient.CreatePipeline(headRef)
-//   if err != nil {
-//     if safeMatchString("Ref not found", err) {
-//       fmt.Printf("CCI: Ref %s not found. Ignoring.\n", headRef)
-//       return
-//     }
-//     panic(err)
-//   }
-// 
-//   fmt.Printf("CCI: Started pipline #%d", num)
-// }
-
