@@ -33,7 +33,7 @@ func (client Client) CreatePipeline(branch string) (int, error) {
   if err != nil { return -1, err }
 
   if !resp.IsSuccess() {
-    return -1, errors.New(fmt.Sprintf("failed to create pipeline with response: %s", readResponse(resp.Body)))
+    return -1, errors.New(fmt.Sprintf("Failed to create pipeline with response: %s", readResponse(resp.Body)))
   }
   
   return result.Number, nil
@@ -63,9 +63,9 @@ func (client Client) CancelLastPipelineWorkflows(ref string, workflowName string
     SetResult(&pipelinesResult).
     SetQueryParam("branch", ref).
     Get(client.projectUrl("pipeline"))
-  if err != nil { return -1, errors.New("failed to get pipeline") }
-  if !resp.IsSuccess() { return -1, errors.New(fmt.Sprintf("failed to get pipeline with response: %s", readResponse(resp.Body))) }
-  if len(pipelinesResult.Items) <= 0 { return 0, errors.New("no pipelines found") }
+  if err != nil { return -1, errors.New("Failed to get pipeline.") }
+  if !resp.IsSuccess() { return -1, errors.New(fmt.Sprintf("Failed to get pipeline with response: %s", readResponse(resp.Body))) }
+  if len(pipelinesResult.Items) <= 0 { return 0, errors.New("No pipelines found.") }
 
   // Get workflows of the first found pipeline (should be the latest)
   item := pipelinesResult.Items[0]
@@ -73,17 +73,17 @@ func (client Client) CancelLastPipelineWorkflows(ref string, workflowName string
   resp, err = client.req.R().
     SetResult(&workflowsResult).
     Get(client.url(fmt.Sprintf("pipeline/%s/workflow", item.Id)))
-  if err != nil { return -1, errors.New("failed to get workflows") }
-  if !resp.IsSuccess() { return -1, errors.New(fmt.Sprintf("failed to get workflows with response: %s", readResponse(resp.Body))) }
-  if len(workflowsResult.Items) <= 0 { return -1, errors.New("pipeline has no workflows") }
+  if err != nil { return -1, errors.New("Failed to get workflows.") }
+  if !resp.IsSuccess() { return -1, errors.New(fmt.Sprintf("Failed to get workflows with response: %s", readResponse(resp.Body))) }
+  if len(workflowsResult.Items) <= 0 { return -1, errors.New("Pipeline has no workflows.") }
 
   // Cancel all found workflows that are running and match the given name.
   cancellations := 0
   for _, workflow := range workflowsResult.Items {
     if workflow.Name == workflowName && workflow.Status == "running" {
       resp, err = client.req.R().Post(client.url(fmt.Sprintf("workflow/%s/cancel", workflow.Id)))
-      if err != nil { return -1, errors.New("failed to cancel workflow") }
-      if !resp.IsSuccess() { return -1, errors.New(fmt.Sprintf("failed to cancel workflow with response: %s", readResponse(resp.Body))) }
+      if err != nil { return -1, errors.New("Failed to cancel workflow.") }
+      if !resp.IsSuccess() { return -1, errors.New(fmt.Sprintf("Failed to cancel workflow with response: %s", readResponse(resp.Body))) }
       cancellations++
     }
   }
