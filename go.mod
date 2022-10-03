@@ -3,7 +3,7 @@ module github.com/Flightlogger/lib-actions
 go 1.19
 
 require (
-	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-github/v47 v47.1.0
 	github.com/imroc/req/v3 v3.24.0
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
 )
@@ -13,7 +13,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/lucas-clemente/quic-go v0.28.1 // indirect
@@ -30,7 +30,7 @@ require (
 	golang.org/x/sys v0.0.0-20220731174439-a90be440212d // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.12 // indirect
-	google.golang.org/appengine v1.4.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
