@@ -103,5 +103,6 @@ func (client Client) projectUrl(uri string) string {
 func readResponse(rc io.ReadCloser) string {
   bytes, err := io.ReadAll(rc)
   if err != nil { return "" }
+	
   return string(bytes)
 }
