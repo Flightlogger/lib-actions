@@ -57,7 +57,6 @@ func (client Client) GetBranchPipelines(branch string) ([]Pipeline, error) {
     Get(client.projectUrl("pipeline"))
   if err != nil { return []Pipeline{}, errors.New("Failed to get pipelines.") }
   if !resp.IsSuccess() { return []Pipeline{}, errors.New(fmt.Sprintf("Failed to get pipeline with response: %s", readResponse(resp.Body))) }
-  if len(result.Items) <= 0 { return result.Items, errors.New("No pipelines found.") }
 
   return result.Items, nil
 }
@@ -77,7 +76,6 @@ func (client Client) GetPipelineWorkflows(pipelineId string) ([]Workflow, error)
     Get(client.url(fmt.Sprintf("pipeline/%s/workflow", pipelineId)))
   if err != nil { return []Workflow{}, errors.New("Failed to get workflows.") }
   if !resp.IsSuccess() { return []Workflow{}, errors.New(fmt.Sprintf("Failed to get workflows with response: %s", readResponse(resp.Body))) }
-  if len(result.Items) <= 0 { return result.Items, errors.New("Pipeline has no workflows.") }
 
   return result.Items, nil
 }
